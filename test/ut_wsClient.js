@@ -22,9 +22,9 @@ var server,
 util.inherits(fbConstr, EventEmitter);
 fb = new fbConstr();
 
-app.use(express.static(__dirname + "/"))
-server = http.createServer(app)
-server.listen(port)
+app.use(express.static(__dirname + "/"));
+server = http.createServer(app);
+server.listen(port);
 wsServer = new WsServer(fb);
 wsServer.start(server);
 

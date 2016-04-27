@@ -23,9 +23,9 @@ var server,
 util.inherits(fbConstr, EventEmitter);
 fb = new fbConstr();
 
-app.use(express.static(__dirname + "/"))
-server = http.createServer(app)
-server.listen(port)
+app.use(express.static(__dirname + "/"));
+server = http.createServer(app);
+server.listen(port);
 
 describe('Constructor Check', function () {
     wsServer = new WsServer(fb);
@@ -39,7 +39,7 @@ describe('Constructor Check', function () {
 
 describe('Signature Check', function () {
     it('start()', function () {
-        (function () { wsServer.start().should.throw(); })
+        (function () { wsServer.start().should.throw(); });
     });
 });
 
@@ -62,7 +62,7 @@ describe('Functional Check', function () {
 
         wsServer._wsServer.on('connection', function () {
             setTimeout(function () {
-                var connClient = wsServer._wsClients[0]
+                var connClient = wsServer._wsClients[0];
                 if (connClient instanceof ws && connClient._auth)
                     done();
             }, 100);
@@ -131,12 +131,12 @@ describe('Functional Check', function () {
             if (_.isEqual(msg, indMsg)) done();
         });
 
-        fb.emit('permitJoin', nc, 100);
+        wsServer.permitJoinHdlr(nc, 100);
     });
 
     it('stop()', function () {
         wsServer.stop();
         should(wsServer._wsServer).be.null();
-        should(wsServer._wsClients).be.deepEqual({[]});
+        should(wsServer._wsClients).be.deepEqual([]);
     });
 });

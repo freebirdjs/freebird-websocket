@@ -4,7 +4,7 @@ var WsClient = require('../lib/wsClient'),
     ws = require('ws'),
     util = require('util'),
     EventEmitter = require('events').EventEmitter,
-    should = require('should');
+    should = require('should'),
     port = process.env.PORT || 5000,
     http = require('http'),
     express = require('express'),
@@ -62,7 +62,7 @@ describe('Functional Check', function () {
 
         wsServer._wsServer.on('connection', function () {
             setTimeout(function () {
-                var connClient = wsServer._wsClients[0];
+                var connClient = wsServer._wsClients[0].client;
                 if (connClient instanceof ws && connClient._auth)
                     done();
             }, 100);
@@ -82,7 +82,7 @@ describe('Functional Check', function () {
     });
 
     it('_reqHdlr()', function (done) {
-        wsClient.sendReq('dev', 'write', {value: 'kitchen'}, function (err, rspCode) {
+        wsClient.sendReq('dev', 'write', {value: 'kitchen'}, function (err, rspCode) {;
             if (rspCode.status === 1) done();
         });
     });
@@ -110,28 +110,29 @@ describe('Functional Check', function () {
 
             if (_.isEqual(JSON.parse(msg), rspMsg)) done();
         });
-        wsServer._sendRsp(wsServer._wsClients[0], reqMsg, 3, 'unavailable');
+        wsServer._sendRsp(wsServer._wsClients[0].client, reqMsg, 3, 'unavailable');
     });
 
     it('_sendInd()', function (done) {
         var nc = {
                 dump: function () { return {name: 'ble-core'} ;}
+            },
+            data = {
+                netcore: 'ble-core',
+                duration: 100
             };
 
         wsClient.on('permitJoining', function (msg) {
             var indMsg = {
                 subsys: 'net',
                 id: null,
-                data: {
-                    netcore: 'ble-core',
-                    leftTime: 100
-                }
+                data: data
             };
 
             if (_.isEqual(msg, indMsg)) done();
         });
 
-        wsServer.permitJoinHdlr(nc, 100);
+        wsServer.receiveFreebirdEvent('permitJoin', data);
     });
 
     it('stop()', function () {

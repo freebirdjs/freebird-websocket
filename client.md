@@ -34,6 +34,29 @@ wsClient.start('ws://192.168.1.103:3000', {});
 * [sendReq()](#API_sendReq)
 
 *************************************************
+<a name="API_isRun"></a>
+### .isRunning()
+
+Check whether the websocket client is running.
+
+**Arguments:** 
+
+- (*none*)
+
+**Returns**
+
+- (*Boolean*): true or false 
+
+```javascript
+if (wsClient.isRunning()) {
+    // wsClient is running
+    // you can send request here
+} else {
+    // wsClient is stop running
+};
+```
+
+*************************************************
 <a name="API_start"></a>
 ### .start(addr[, options], authData)
 
@@ -42,7 +65,7 @@ Start running websocket client, and sent authentication data to server to do aut
 **Arguments:**
 
 1. `addr` (*String*): host address
-2. `option` (*Object*): An object to set up the websocket client side. Please refer to [ws.md](https://github.com/websockets/ws/blob/master/doc/ws.md#new-wswebsocketaddress-protocols-options) to see more detail.
+2. `option` (*Object*): An object to set up the websocket client. Please refer to [ws.md](https://github.com/websockets/ws/blob/master/doc/ws.md#new-wswebsocketaddress-protocols-options) to see more detail about options.
 3. `authData` (*Object*): Authenticate data. It can contain any information you would like to authenticate.
 
 **Returns**
@@ -81,24 +104,6 @@ wsClient.stop();
 ```
 
 *************************************************
-<a name="API_isRun"></a>
-### .isRunning()
-
-Check whether the websocket client is running.
-
-**Arguments:** 
-
-- (*none*)
-
-**Returns**
-
-- (*Boolean*): true or false 
-
-```javascript
-wsClient.isRunning();
-```
-
-*************************************************
 <a name="API_sendReq"></a>
 ### .sendReq(subSys, cmd, args, callback)
 
@@ -107,7 +112,7 @@ Client sends to Server to request something or to ask the server to perform an o
 **Arguments:** 
 
 1. `subSys` (*String*): Only 3 types accepted. They are 'net', 'dev', and 'gad' to denote which subsystem is this message going to.
-2. `cmd` (*String*): Command Identifier corresponding to the API name. Please see section [Request Data Model](https://github.com/simenkid/freebird-web-client-server-spec/blob/master/spec.md#RequestData) to learn more commnad name.
+2. `cmd` (*String*): Command Identifier corresponding to the API name. It can be found in the Command Name field of the [Request Data Model](https://github.com/simenkid/freebird-web-client-server-spec/blob/master/spec.md#RequestData).
 3. `args` (*Object*):     A value-object that contains command arguments. Please see section [Request Data Model](https://github.com/simenkid/freebird-web-client-server-spec/blob/master/spec.md#RequestData) to learn more about the args data object.
 4. `callback` (*Function*): `function (err, result) {}`. Get called when server respond to client with the results of the client asking for.
     * `'err'` (*Error*): Error object.
@@ -127,6 +132,7 @@ wsClient.sendReq('net', 'getAllDevIds', {ncName: 'ble-core'}, function(err, resu
     } else {
         console.log(result);
 
+	// result equal to 
         // {
         //     status: 0,
         //     data: {

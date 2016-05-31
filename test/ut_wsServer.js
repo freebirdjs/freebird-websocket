@@ -6,9 +6,7 @@ var WsClient = require('../lib/wsClient'),
     EventEmitter = require('events').EventEmitter,
     should = require('should'),
     port = process.env.PORT || 5000,
-    http = require('http'),
-    express = require('express'),
-    app = express();
+    http = require('http');
 
 var server,
     wsServer,
@@ -18,13 +16,14 @@ var server,
         this.authorize = function (a, b) { b(null, true); };
         this.authenticate = function (a, b, c) { c(null, true); };
         this.dev = {};
+
+        this.findWsApi = function () {};
     };
 
 util.inherits(fbConstr, EventEmitter);
 fb = new fbConstr();
 
-app.use(express.static(__dirname + "/"));
-server = http.createServer(app);
+server = http.createServer();
 server.listen(port);
 
 describe('Constructor Check', function () {
@@ -39,13 +38,29 @@ describe('Constructor Check', function () {
 
 describe('Signature Check', function () {
     it('start()', function () {
-        (function () { wsServer.start().should.throw(); });
+        (function () { wsServer.start(); }).should.throw();
+        (function () { wsServer.start({}); }).should.throw();
+        (function () { wsServer.start([]); }).should.throw();
+        (function () { wsServer.start(123); }).should.throw();
+        (function () { wsServer.start(true); }).should.throw();
+        (function () { wsServer.start('abc'); }).should.throw();
+    });
+
+    it('receiveFreebirdEvent()', function () {
+        (function () { wsServer.receiveFreebirdEvent({}, {}); }).should.throw();
+        (function () { wsServer.receiveFreebirdEvent([], {}); }).should.throw();
+        (function () { wsServer.receiveFreebirdEvent(123, {}); }).should.throw();
+        (function () { wsServer.receiveFreebirdEvent(true, {}); }).should.throw();
+        (function () { wsServer.receiveFreebirdEvent('abc', {}); }).should.throw();
+        (function () { wsServer.receiveFreebirdEvent('devError', []); }).should.throw();
+        (function () { wsServer.receiveFreebirdEvent('devError', 123); }).should.throw();
+        (function () { wsServer.receiveFreebirdEvent('devError', true); }).should.throw();
+        (function () { wsServer.receiveFreebirdEvent('devError', 'abc'); }).should.throw();
     });
 });
 
 describe('Functional Check', function () {
     it('start()', function (done) {
-
        wsServer.start(server);
         if (wsServer._wsServer instanceof ws.Server)
             done();
@@ -60,12 +75,10 @@ describe('Functional Check', function () {
         wsClient = new WsClient();
         wsClient.start('ws://localhost:' + port, {});
 
-        wsServer._wsServer.on('connection', function () {
-            setTimeout(function () {
-                var connClient = wsServer._wsClients[0].client;
-                if (connClient instanceof ws && connClient._auth)
-                    done();
-            }, 100);
+        wsClient.on('open', function () {
+            var connClient = wsServer._wsClients[0].client;
+            if (connClient instanceof ws && connClient._auth)
+                done();
         });
 
         /*** test authenticate error ***/
@@ -82,7 +95,8 @@ describe('Functional Check', function () {
     });
 
     it('_reqHdlr()', function (done) {
-        wsClient.sendReq('dev', 'write', {value: 'kitchen'}, function (err, rspCode) {;
+        this.timeout(3000);
+        wsClient.sendReq('dev', 'write', {value: 'kitchen'}, function (err, rspCode) {
             if (rspCode.status === 1) done();
         });
     });

@@ -1,13 +1,9 @@
 var WsClient = require('../lib/wsClient'),
     WsServer = require('../lib/wsServer'),
     _ = require('lodash'),
-    util = require('util'),
-    EventEmitter = require('events').EventEmitter,
     should = require('should'),
     port = process.env.PORT || 5000,
-    http = require('http'),
-    express = require('express'),
-    app = express();
+    http = require('http');
 
 var server,
     wsServer,
@@ -17,14 +13,15 @@ var server,
         this.authorize = function (a, b) { b(null, true); };
         this.authenticate = function (a, b, c) { c(null, true); };
         this.dev = {};
+
+        this.findWsApi = function () {};
     };
 
-util.inherits(fbConstr, EventEmitter);
 fb = new fbConstr();
 
-app.use(express.static(__dirname + "/"));
-server = http.createServer(app);
+server = http.createServer();
 server.listen(port);
+
 wsServer = new WsServer(fb);
 wsServer.start(server);
 

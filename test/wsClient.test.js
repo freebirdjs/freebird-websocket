@@ -14,16 +14,10 @@ var server,
         this.authenticate = function (a, b, c) { c(null, true); };
         this.dev = {};
 
-        this.findWsApi = function () {};
+        this.find = function () {};
     };
 
 fb = new fbConstr();
-
-server = http.createServer();
-server.listen(port);
-
-wsServer = new WsServer(fb);
-wsServer.start(server);
 
 describe('Constructor Check', function () {
     wsClient = new WsClient();
@@ -87,11 +81,17 @@ describe('Signature Check', function () {
 
 describe('Functional Check', function () {
     it('start()', function (done) {
-         wsClient.on('open', function () {
+        server = http.createServer();
+        server.listen(port);
+
+        wsServer = new WsServer(fb);
+        wsServer.start(server);
+
+        wsClient.on('open', function () {
             if (wsClient._connected && wsClient._auth)
                 done();
-         });
-         wsClient.start('ws://localhost:' + port, {});
+        });
+        wsClient.start('ws://localhost:' + port, {});
     });
 
     it('sendReq()', function (done) {
@@ -108,8 +108,10 @@ describe('Functional Check', function () {
             if (_.isNull(wsClient._wsClient) && wsClient._auth === false && wsClient._connected === false) 
                 checkFlag = true;
 
-            if (status === 100 && checkFlag)
+            if (status === 100 && checkFlag) {
+                wsServer.stop();
                 done();
+            }
         });
         wsClient.stop();
     });

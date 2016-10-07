@@ -5,7 +5,7 @@ var WsClient = require('../lib/wsClient'),
     util = require('util'),
     EventEmitter = require('events').EventEmitter,
     should = require('should'),
-    port = process.env.PORT || 5000,
+    port = process.env.PORT || 5001,
     http = require('http');
 
 var server,
@@ -17,20 +17,19 @@ var server,
         this.authenticate = function (a, b, c) { c(null, true); };
         this.dev = {};
 
-        this.findWsApi = function () {};
+        this.find = function () {};
     };
 
 util.inherits(fbConstr, EventEmitter);
 fb = new fbConstr();
 
-server = http.createServer();
-server.listen(port);
-
 describe('Constructor Check', function () {
-    wsServer = new WsServer(fb);
+    
 
     it('WsServer()', function () {
-        should(wsServer._fb).be.equal(fb);
+        wsServer = new WsServer(fb);
+
+        should(wsServer._freebird).be.equal(fb);
         should(wsServer._wsServer).be.null();
         should(wsServer._wsClients).be.deepEqual([]);
     });
@@ -61,7 +60,11 @@ describe('Signature Check', function () {
 
 describe('Functional Check', function () {
     it('start()', function (done) {
-       wsServer.start(server);
+        server = http.createServer();
+        server.listen(port);
+
+        wsServer.start(server);
+
         if (wsServer._wsServer instanceof ws.Server)
             done();
     });

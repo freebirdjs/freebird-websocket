@@ -1,6 +1,6 @@
 var WsClient = require('../lib/wsClient'),
     WsServer = require('../lib/wsServer'),
-    _ = require('lodash'),
+    _ = require('busyman'),
     should = require('should'),
     port = process.env.PORT || 5000,
     http = require('http');

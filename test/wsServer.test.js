@@ -1,6 +1,6 @@
 var WsClient = require('../lib/wsClient'),
     WsServer = require('../lib/wsServer'),
-    _ = require('lodash'),
+    _ = require('busyman'),
     ws = require('ws'),
     util = require('util'),
     EventEmitter = require('events').EventEmitter,

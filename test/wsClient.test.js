@@ -1,118 +1,118 @@
-var WsClient = require('../lib/wsClient'),
-    WsServer = require('../lib/wsServer'),
-    _ = require('busyman'),
-    should = require('should'),
-    port = process.env.PORT || 5000,
-    http = require('http');
+/* eslint-env mocha */
+const _ = require('busyman')
+const should = require('should')
 
-var server,
-    wsServer,
-    wsClient,
-    fb,
-    fbConstr = function () {
-        this.authorize = function (a, b) { b(null, true); };
-        this.authenticate = function (a, b, c) { c(null, true); };
-        this.dev = {};
+const port = process.env.PORT || 5000
+const http = require('http')
+const WsServer = require('../lib/wsServer')
+const WsClient = require('../lib/wsClient')
 
-        this.find = function () {};
-    };
+let server
+let wsServer
+let wsClient
+let fb
+const FbConstr = function () {
+  this.authorize = function (a, b) { b(null, true) }
+  this.authenticate = function (a, b, c) { c(null, true) }
+  this.dev = {}
 
-fb = new fbConstr();
+  this.find = function () {}
+}
 
-describe('Constructor Check', function () {
-    wsClient = new WsClient();
+fb = new FbConstr()
 
-    it('WsClient()', function () {
-        should(wsClient._wsClient).be.null();
-        should(wsClient._auth).be.false();
-        should(wsClient._connected).be.false();
-        should(wsClient._nextTransId).be.Function();
-    });
-});
+describe('Constructor Check', () => {
+  wsClient = new WsClient()
 
-describe('Signature Check', function () {
-    it('start(addr, options, authData)', function () {
-        // (function () { wsClient.start('ws://localhost:' + port, {}); }).should.not.throw();
-        // (function () { wsClient.start('ws://localhost:' + port, {}, {}); }).should.not.throw();
+  it('WsClient()', () => {
+    should(wsClient._wsClient).be.null()
+    should(wsClient._auth).be.false()
+    should(wsClient._connected).be.false()
+    should(wsClient._nextTransId).be.Function()
+  })
+})
 
-        (function () { wsClient.start({}, {}); }).should.throw();
-        (function () { wsClient.start([], {}); }).should.throw();
-        (function () { wsClient.start(123, {}); }).should.throw();
-        (function () { wsClient.start(true, {}); }).should.throw();
-        (function () { wsClient.start(undefined, {}); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, []); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, 123); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, true); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, undefined); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, 'xxx'); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, {}, []); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, {}, 123); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, {}, true); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, {}, undefined); }).should.throw();
-        (function () { wsClient.start('ws://localhost:' + port, {}, 'xxx'); }).should.throw();
-    });
+describe('Signature Check', () => {
+  it('start(addr, options, authData)', () => {
+    // (function () { wsClient.start('ws://localhost:' + port, {}); }).should.not.throw();
+    // (function () { wsClient.start('ws://localhost:' + port, {}, {}); }).should.not.throw();
 
-    it('sendReq(subsys, cmd, args, callback)', function () {
-        (function () { wsClient.sendReq('xxx', 'xxx', {}, function () {}); }).should.not.throw();
+    (function () { wsClient.start({}, {}) }).should.throw();
+    (function () { wsClient.start([], {}) }).should.throw();
+    (function () { wsClient.start(123, {}) }).should.throw();
+    (function () { wsClient.start(true, {}) }).should.throw();
+    (function () { wsClient.start(undefined, {}) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, []) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, 123) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, true) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, undefined) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, 'xxx') }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, {}, []) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, {}, 123) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, {}, true) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, {}, undefined) }).should.throw();
+    (function () { wsClient.start(`ws://localhost:${port}`, {}, 'xxx') }).should.throw()
+  })
 
-        (function () { wsClient.sendReq({}, 'xxx', {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq([], 'xxx', {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq(123, 'xxx', {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq(true, 'xxx', {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq(undefined, 'xxx', {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', {}, {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', [], {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 123, {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', true, {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', undefined, {}, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', [], function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', 123, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', true, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', undefined, function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', 'xxx', function () {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', {}, {}); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', {}, []); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', {}, 123); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', {}, true); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', {}, undefined); }).should.throw();
-        (function () { wsClient.sendReq('xxx', 'xxx', {}, 'xxx'); }).should.throw();
-    });
-});
+  it('sendReq(subsys, cmd, args, callback)', () => {
+    (function () { wsClient.sendReq('xxx', 'xxx', {}, () => {}) }).should.not.throw();
 
-describe('Functional Check', function () {
-    it('start()', function (done) {
-        server = http.createServer();
-        server.listen(port);
+    (function () { wsClient.sendReq({}, 'xxx', {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq([], 'xxx', {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq(123, 'xxx', {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq(true, 'xxx', {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq(undefined, 'xxx', {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', {}, {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', [], {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 123, {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', true, {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', undefined, {}, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', [], () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', 123, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', true, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', undefined, () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', 'xxx', () => {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', {}, {}) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', {}, []) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', {}, 123) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', {}, true) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', {}, undefined) }).should.throw();
+    (function () { wsClient.sendReq('xxx', 'xxx', {}, 'xxx') }).should.throw()
+  })
+})
 
-        wsServer = new WsServer(fb);
-        wsServer.start(server);
+describe('Functional Check', () => {
+  it('start()', (done) => {
+    server = http.createServer()
+    server.listen(port)
 
-        wsClient.on('open', function () {
-            if (wsClient._connected && wsClient._auth)
-                done();
-        });
-        wsClient.start('ws://localhost:' + port, {});
-    });
+    wsServer = new WsServer(fb)
+    wsServer.start(server)
 
-    it('sendReq()', function (done) {
-        wsClient.sendReq('dev', 'write', {value: 'kitchen'}, function (err, rsp) {
-            if (rsp.status === 1)
-                done();
-        });
-    });
+    wsClient.on('open', () => {
+      if (wsClient._connected && wsClient._auth) done()
+    })
+    wsClient.start(`ws://localhost:${port}`, {})
+  })
 
-    it('stop()', function (done) {
-        var checkFlag = false;
+  it('sendReq()', (done) => {
+    wsClient.sendReq('dev', 'write', { value: 'kitchen' }, (err, rsp) => {
+      should(err).be.null()
+      if (rsp.status === 1) done()
+    })
+  })
 
-        wsClient.on('close', function (status) {
-            if (_.isNull(wsClient._wsClient) && wsClient._auth === false && wsClient._connected === false) 
-                checkFlag = true;
+  it('stop()', (done) => {
+    let checkFlag = false
 
-            if (status === 100 && checkFlag) {
-                wsServer.stop();
-                done();
-            }
-        });
-        wsClient.stop();
-    });
-});
+    wsClient.on('close', (status) => {
+      if (_.isNull(wsClient._wsClient) && wsClient._auth === false && wsClient._connected === false) checkFlag = true
+
+      if (status === 100 && checkFlag) {
+        wsServer.stop()
+        done()
+      }
+    })
+    wsClient.stop()
+  })
+})

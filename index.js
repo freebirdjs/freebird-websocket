@@ -1,4 +1,4 @@
 module.exports = {
-    Server: require('./lib/wsServer.js'),
-    Client: require('./lib/wsClient.js')
-};
+  Server: require('./lib/wsServer.js'),
+  Client: require('./lib/wsClient.js')
+}
